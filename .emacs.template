@@ -1,0 +1,108 @@
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+
+ ;; this is evil
+ ;; '(org-agenda-files nil t)
+
+ '(inhibit-startup-screen t)
+)
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(default 
+    ((t (:inherit nil :stipple nil :background "black" :foreground "white" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 83 :width normal :foundry "unknown" :family "DejaVu Sans Mono")))))
+
+
+(defun php-mode-hooks
+)
+
+(add-to-list 'load-path "~/.emacs.d/")
+(load "fill-column-indicator")
+(load "php-mode")
+
+
+;; (setq fci-rule-color "green")
+;; (add-hook 'php-mode-hook 'fci-mode)
+(add-hook 'php-mode-hook 
+	  (lambda ()
+	    (set-fill-column 79)
+	    (fci-mode 1)
+	    (column-number-mode 1)))
+
+
+(setq-default fill-column 80)
+
+
+;; doesn't work
+;; (load "mmm-mode") 
+;; (save-mmm-c-locals)
+
+;; jump to line
+(global-set-key "\C-l" 'goto-line)
+
+;; translate <select> to keyb END
+(define-key global-map [select] 'end-of-line)
+
+;; multimode support for clean html/php crossover compatibility
+(defun save-mmm-c-locals ()
+  (with-temp-buffer
+    (php-mode)
+    (dolist (v (buffer-local-variables))
+      (when (string-match "\\`c-" (symbol-name (car v)))
+	(add-to-list 'mmm-save-local-variables `(,(car v) nil ,mmm-c-derived-modes))))))
+
+
+
+
+
+;; org settings
+(require 'org-install)
+(add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
+(define-key global-map "\C-cl" 'org-store-link)
+(define-key global-map "\C-ca" 'org-agenda)
+(setq org-log-done t)
+(setq org-agenda-files (list "~/.org/phone.org" "~/.org/work.org"
+			     "~/.org/studies.org" "~/.org/social.org"))
+
+;; org journal
+(defvar org-journal-file "~/.org/journal.org"  
+  "Path to OrgMode journal file.")  
+(defvar org-journal-date-format "%Y-%m-%d"  
+  "Date format string for journal headings.")  
+
+(defun org-journal-entry ()  
+  "Create a new diary entry for today or append to an existing one."  
+  (interactive)  
+  (switch-to-buffer (find-file org-journal-file))  
+  (widen)  
+  (let ((today (format-time-string org-journal-date-format)))  
+    (beginning-of-buffer)  
+    (unless (org-goto-local-search-headings today nil t)  
+      ((lambda ()   
+	 (org-insert-heading)  
+	 (insert today)  
+	 (insert "\n\n  \n"))))  
+    (beginning-of-buffer)  
+    (org-show-entry)  
+    (org-narrow-to-subtree)  
+    (end-of-buffer)  
+    (backward-char 2)  
+    (unless (= (current-column) 2)  
+      (insert "\n\n  "))))  
+(global-set-key "\C-cj" 'org-journal-entry)
+
+
+;; backup-files in special directory
+(setq backup-directory-alist `(("." . "~/.saves")))
+(setq backup-by-copying t)
+
+(setq delete-old-versions t
+      kept-new-versions 6
+      kept-old-versions 2
+      version-control t)
+(put 'scroll-left 'disabled nil)
